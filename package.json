@@ -1,7 +1,7 @@
 {
-  "name": "aws-lockbox-env",
+  "name": "ssm-env-accio",
   "version": "1.0.2",
-  "description": "AWS SSM Parameter Store loader with automatic retries and environment configuration",
+  "description": "Summon all your environment variables on demand, it's magic!",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
