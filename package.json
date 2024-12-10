@@ -21,8 +21,9 @@
   "readme": "README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tupizz/ssm-env-accio"
+    "url": "git+https://github.com/tupizz/ssm-env-accio.git"
   },
+  "homepage": "https://github.com/tupizz/ssm-env-accio/blob/main/README.md",
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.699.0"
   },
