@@ -54,8 +54,9 @@ export class ConfigLoader {
       const envConfigPath = path.join(basePath, `${nodeEnv}.js`);
       if (fs.existsSync(envConfigPath)) {
         logger.info(`Loading environment-specific config from ${envConfigPath}`);
-        console.log(require(envConfigPath));
-        return require(envConfigPath);
+        logger.info("envConfigPath", require(envConfigPath));
+        logger.info("envConfigPath", require(envConfigPath)?.default);
+        return require(envConfigPath)?.default || require(envConfigPath);
       }
 
       // Try environment-specific TypeScript config
@@ -69,7 +70,7 @@ export class ConfigLoader {
       const defaultJsPath = path.join(basePath, "default.js");
       if (fs.existsSync(defaultJsPath)) {
         logger.info(`Loading default config from ${defaultJsPath}`);
-        return require(defaultJsPath);
+        return require(defaultJsPath)?.default || require(defaultJsPath);
       }
 
       // Try default.ts
