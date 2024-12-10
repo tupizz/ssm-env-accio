@@ -1,6 +1,6 @@
 {
   "name": "ssm-env-accio",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Summon all your environment variables on demand, it's magic!",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
