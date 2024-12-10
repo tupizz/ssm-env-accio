@@ -29,6 +29,8 @@ export class ConfigLoader {
         if (config.configPath) {
           return [config.configPath, ...this.DEFAULT_CONFIG_PATHS];
         }
+      } else {
+        return this.DEFAULT_CONFIG_PATHS;
       }
     } catch (error) {
       console.warn("Failed to read .lockbox config:", error);
