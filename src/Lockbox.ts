@@ -41,6 +41,10 @@ export class Lockbox {
    */
   async init(): Promise<void> {
     try {
+      if (!this.parameters.parameters) {
+        throw new Error('No parameters to initialize');
+      }
+
       const parameters = await this.getParameters(this.parameters.parameters);
       this.setEnvVariables(parameters);
 

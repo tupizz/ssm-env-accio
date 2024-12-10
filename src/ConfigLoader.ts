@@ -54,6 +54,7 @@ export class ConfigLoader {
       const envConfigPath = path.join(basePath, `${nodeEnv}.js`);
       if (fs.existsSync(envConfigPath)) {
         logger.info(`Loading environment-specific config from ${envConfigPath}`);
+        console.log(require(envConfigPath));
         return require(envConfigPath);
       }
 
