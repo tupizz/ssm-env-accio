@@ -1,8 +1,11 @@
 import {
   GetParametersCommand,
   Parameter,
-  SSMClient,
+  SSMClient
 } from "@aws-sdk/client-ssm";
+
+import { fromIni } from "@aws-sdk/credential-provider-ini";
+
 import { ConfigLoader, ParameterConfig } from "./ConfigLoader";
 import { logger } from "./logger";
 
@@ -38,16 +41,25 @@ export class Lockbox {
     } = config;
 
     if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-      throw new Error("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set");
+      if (!process.env.AWS_PROFILE) {
+        throw new Error("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY or AWS_PROFILE must be set");
+      }
     }
+  
+    const credentials = process.env.AWS_PROFILE
+      ? fromIni({ profile: process.env.AWS_PROFILE })
+      : {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          sessionToken: process.env.AWS_SESSION_TOKEN as string,
+        };
+  
+    if (!process.env.AWS_SESSION_TOKEN) {
+      delete (credentials as any).sessionToken;
+    }
+  
+    this.client = new SSMClient({ region, credentials });
 
-    this.client = new SSMClient({
-      region,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-      },
-    });
     this.maxTries = maxTries;
     this.batchSize = batchSize;
 

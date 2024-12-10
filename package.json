@@ -27,6 +27,7 @@
   "homepage": "https://github.com/tupizz/ssm-env-accio/blob/main/README.md",
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.699.0",
+    "@aws-sdk/credential-provider-ini": "^3.699.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
