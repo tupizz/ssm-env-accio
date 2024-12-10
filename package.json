@@ -1,0 +1,35 @@
+{
+  "name": "aws-lockbox-env",
+  "version": "1.0.2",
+  "description": "AWS SSM Parameter Store loader with automatic retries and environment configuration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "aws",
+    "ssm",
+    "parameter-store",
+    "environment",
+    "config"
+  ],
+  "dependencies": {
+    "@aws-sdk/client-ssm": "^3.699.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@types/node": "^20.17.9",
+    "eslint": "^9.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.13.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0"
+  }
+}
