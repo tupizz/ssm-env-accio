@@ -1,6 +1,10 @@
-import { GetParametersCommand, Parameter, SSMClient } from '@aws-sdk/client-ssm';
-import { ConfigLoader, ParameterConfig } from './ConfigLoader';
-import { logger } from './logger';
+import {
+  GetParametersCommand,
+  Parameter,
+  SSMClient,
+} from "@aws-sdk/client-ssm";
+import { ConfigLoader, ParameterConfig } from "./ConfigLoader";
+import { logger } from "./logger";
 
 interface LockboxConfig {
   region?: string;
@@ -17,18 +21,33 @@ export class Lockbox {
   private isInitialized = false;
 
   private static readonly THROTTLING_ERRORS = [
-    'ProvisionedThroughputExceededException',
-    'Throttling',
-    'ThrottlingException',
-    'RequestLimitExceeded',
-    'RequestThrottled',
-    'TooManyRequestsException',
+    "ProvisionedThroughputExceededException",
+    "Throttling",
+    "ThrottlingException",
+    "RequestLimitExceeded",
+    "RequestThrottled",
+    "TooManyRequestsException",
   ] as const;
 
   constructor(config: LockboxConfig = {}) {
-    const { region = 'us-east-1', maxTries = 100, batchSize = 10, parameters } = config;
+    const {
+      region = "us-east-1",
+      maxTries = 100,
+      batchSize = 10,
+      parameters,
+    } = config;
 
-    this.client = new SSMClient({ region });
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+      throw new Error("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set");
+    }
+
+    this.client = new SSMClient({
+      region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      },
+    });
     this.maxTries = maxTries;
     this.batchSize = batchSize;
 
@@ -42,7 +61,7 @@ export class Lockbox {
   async init(): Promise<void> {
     try {
       if (!this.parameters.parameters) {
-        throw new Error('No parameters to initialize');
+        throw new Error("No parameters to initialize");
       }
 
       const parameters = await this.getParameters(this.parameters.parameters);
@@ -54,7 +73,7 @@ export class Lockbox {
 
       this.isInitialized = true;
     } catch (error) {
-      logger.error('Failed to initialize parameters:', error);
+      logger.error("Failed to initialize parameters:", error);
       throw error;
     }
   }
@@ -67,7 +86,7 @@ export class Lockbox {
 
     while (!this.isInitialized) {
       if (Date.now() - startTime > maxWaitMs) {
-        throw new Error('Timeout waiting for parameter initialization');
+        throw new Error("Timeout waiting for parameter initialization");
       }
       await new Promise((resolve) => setTimeout(resolve, checkIntervalMs));
     }
@@ -75,13 +94,18 @@ export class Lockbox {
 
   private async getParameters(parameterNames: string[]): Promise<Parameter[]> {
     const chunks = this.chunkArray(parameterNames, this.batchSize);
-    const parameterPromises = chunks.map((chunk) => this.getParameterChunkWithRetry(chunk));
+    const parameterPromises = chunks.map((chunk) =>
+      this.getParameterChunkWithRetry(chunk)
+    );
 
     const responses = await Promise.all(parameterPromises);
     return responses.flat();
   }
 
-  private async getParameterChunkWithRetry(names: string[], retryCount = 0): Promise<Parameter[]> {
+  private async getParameterChunkWithRetry(
+    names: string[],
+    retryCount = 0
+  ): Promise<Parameter[]> {
     try {
       const command = new GetParametersCommand({
         Names: names,
@@ -93,7 +117,9 @@ export class Lockbox {
     } catch (error) {
       if (this.isThrottlingError(error) && retryCount < this.maxTries) {
         const delayMs = Math.min(1000 * Math.pow(2, retryCount), 20000);
-        logger.info(`Throttled, retry ${retryCount + 1}/${this.maxTries} after ${delayMs}ms`);
+        logger.info(
+          `Throttled, retry ${retryCount + 1}/${this.maxTries} after ${delayMs}ms`
+        );
 
         await new Promise((resolve) => setTimeout(resolve, delayMs));
         return this.getParameterChunkWithRetry(names, retryCount + 1);
@@ -106,18 +132,22 @@ export class Lockbox {
   private setEnvVariables(parameters: Parameter[]): void {
     const paramNames: string[] = [];
     for (const param of parameters) {
-      paramNames.push(param.Name || '');
+      paramNames.push(param.Name || "");
       if (param.Name && param.Value) {
         process.env[param.Name] = param.Value;
       }
     }
     if (paramNames.length > 0) {
-      logger.info(`Set ${paramNames.join(', ')} environment variables`);
+      logger.info(`Set ${paramNames.join(", ")} environment variables`);
     }
   }
 
   private isThrottlingError(error: unknown): boolean {
-    return error instanceof Error && 'name' in error && Lockbox.THROTTLING_ERRORS.includes(error.name as any);
+    return (
+      error instanceof Error &&
+      "name" in error &&
+      Lockbox.THROTTLING_ERRORS.includes(error.name as any)
+    );
   }
 
   private chunkArray<T>(array: T[], size: number): T[][] {
