@@ -1,5 +1,6 @@
 import { GetParametersCommand, Parameter, SSMClient } from '@aws-sdk/client-ssm';
 import { ConfigLoader, ParameterConfig } from './ConfigLoader';
+import { logger } from './logger';
 
 interface LockboxConfig {
   region?: string;
@@ -31,11 +32,8 @@ export class Lockbox {
     this.maxTries = maxTries;
     this.batchSize = batchSize;
 
-    console.log(parameters);
-
     // Load parameters from config file if not provided
     this.parameters = parameters || ConfigLoader.loadConfig();
-    console.log(this.parameters);
   }
 
   /**
@@ -52,7 +50,7 @@ export class Lockbox {
 
       this.isInitialized = true;
     } catch (error) {
-      console.error('Failed to initialize parameters:', error);
+      logger.error('Failed to initialize parameters:', error);
       throw error;
     }
   }
@@ -91,7 +89,7 @@ export class Lockbox {
     } catch (error) {
       if (this.isThrottlingError(error) && retryCount < this.maxTries) {
         const delayMs = Math.min(1000 * Math.pow(2, retryCount), 20000);
-        console.log(`Throttled, retry ${retryCount + 1}/${this.maxTries} after ${delayMs}ms`);
+        logger.info(`Throttled, retry ${retryCount + 1}/${this.maxTries} after ${delayMs}ms`);
 
         await new Promise((resolve) => setTimeout(resolve, delayMs));
         return this.getParameterChunkWithRetry(names, retryCount + 1);
@@ -102,10 +100,15 @@ export class Lockbox {
   }
 
   private setEnvVariables(parameters: Parameter[]): void {
+    const paramNames: string[] = [];
     for (const param of parameters) {
+      paramNames.push(param.Name || '');
       if (param.Name && param.Value) {
         process.env[param.Name] = param.Value;
       }
+    }
+    if (paramNames.length > 0) {
+      logger.info(`Set ${paramNames.join(', ')} environment variables`);
     }
   }
 

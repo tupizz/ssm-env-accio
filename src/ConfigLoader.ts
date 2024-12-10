@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { logger } from "./logger";
 
 export interface ParameterConfig {
   parameters: string[];
@@ -41,9 +42,6 @@ export class ConfigLoader {
 
     for (const configDir of configPaths) {
       const basePath = path.join(process.cwd(), configDir);
-      console.log(basePath);
-
-      console.log("exists", fs.existsSync(basePath));
 
       // Skip if directory doesn't exist
       if (!fs.existsSync(basePath)) {
@@ -53,27 +51,33 @@ export class ConfigLoader {
       // Try environment-specific config first
       const envConfigPath = path.join(basePath, `${nodeEnv}.js`);
       if (fs.existsSync(envConfigPath)) {
+        logger.info(`Loading environment-specific config from ${envConfigPath}`);
         return require(envConfigPath);
       }
 
       // Try environment-specific TypeScript config
       const envTsConfigPath = path.join(basePath, `${nodeEnv}.ts`);
       if (fs.existsSync(envTsConfigPath)) {
+        logger.info(`Loading environment-specific TypeScript config from ${envTsConfigPath}`);
         return require(envTsConfigPath).default;
       }
 
       // Try default.js
       const defaultJsPath = path.join(basePath, "default.js");
       if (fs.existsSync(defaultJsPath)) {
+        logger.info(`Loading default config from ${defaultJsPath}`);
         return require(defaultJsPath);
       }
 
       // Try default.ts
       const defaultTsPath = path.join(basePath, "default.ts");
       if (fs.existsSync(defaultTsPath)) {
+        logger.info(`Loading default TypeScript config from ${defaultTsPath}`);
         return require(defaultTsPath).default;
       }
     }
+    
+    logger.error("No configuration file found. Create either a lockbox/default.js or lockbox/{NODE_ENV}.js file");
 
     throw new Error(
       "No configuration file found. Create either a lockbox/default.js or lockbox/{NODE_ENV}.js file"

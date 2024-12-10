@@ -122,7 +122,7 @@ npm run test
 ### Run the example
 
 ```bash
-npx ts-node examples/index.ts
+NODE_ENV=dev npx ts-node examples/index.ts
 ```
 
 ## 📝 License
