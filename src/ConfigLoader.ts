@@ -33,36 +33,33 @@ export class ConfigLoader {
         return this.DEFAULT_CONFIG_PATHS;
       }
     } catch (error) {
-      console.warn("Failed to read .lockbox config:", error);
+      logger.warn("Failed to read .lockbox config:", error);
     }
     return this.DEFAULT_CONFIG_PATHS;
   }
 
   static loadConfig(): ParameterConfig {
-    const nodeEnv = process.env.NODE_ENV || 'dev';
+    const nodeEnv = process.env.NODE_ENV || "dev";
     const configPaths = this.getLockboxConfig();
 
     for (const configDir of configPaths) {
       const basePath = path.join(process.cwd(), configDir);
 
       // Skip if directory doesn't exist
-      if (!fs.existsSync(basePath)) {
-        continue;
-      }
+      if (!fs.existsSync(basePath)) continue;
 
       // Try environment-specific config first
       const envConfigPath = path.join(basePath, `${nodeEnv}.js`);
       if (fs.existsSync(envConfigPath)) {
-        logger.info(`Loading environment-specific config from ${envConfigPath}`);
-        logger.info("envConfigPath", require(envConfigPath));
-        logger.info("envConfigPath", require(envConfigPath)?.default);
         return require(envConfigPath)?.default || require(envConfigPath);
       }
 
       // Try environment-specific TypeScript config
       const envTsConfigPath = path.join(basePath, `${nodeEnv}.ts`);
       if (fs.existsSync(envTsConfigPath)) {
-        logger.info(`Loading environment-specific TypeScript config from ${envTsConfigPath}`);
+        logger.info(
+          `Loading environment-specific TypeScript config from ${envTsConfigPath}`
+        );
         return require(envTsConfigPath).default;
       }
 
@@ -80,8 +77,10 @@ export class ConfigLoader {
         return require(defaultTsPath).default;
       }
     }
-    
-    logger.error("No configuration file found. Create either a lockbox/default.js or lockbox/{NODE_ENV}.js file");
+
+    logger.error(
+      "No configuration file found. Create either a lockbox/default.js or lockbox/{NODE_ENV}.js file"
+    );
 
     throw new Error(
       "No configuration file found. Create either a lockbox/default.js or lockbox/{NODE_ENV}.js file"

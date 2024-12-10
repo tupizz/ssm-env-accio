@@ -6,15 +6,10 @@ import { createLogger, format, Logger, transports } from "winston";
 
 const logger: Logger = createLogger({
   level: "info",
-  format: format.combine(
-    format.json()
-  ),
+  format: format.combine(format.timestamp(), format.json()),
   transports: [
     new transports.Console({
-      format: format.combine(
-        format.colorize(),
-        format.simple()
-      ),
+      format: format.combine(format.timestamp(), format.json()),
     }),
   ],
 });
