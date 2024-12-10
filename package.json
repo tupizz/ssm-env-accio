@@ -1,6 +1,6 @@
 {
   "name": "ssm-env-accio",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Summon all your environment variables on demand, it's magic!",
   "author": "Tadeu Tupinambá <tadeu.tupiz@gmail.com>",
   "main": "dist/index.js",
