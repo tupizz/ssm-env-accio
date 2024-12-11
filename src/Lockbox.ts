@@ -47,17 +47,13 @@ export class Lockbox {
     }
   
     const credentials = process.env.AWS_PROFILE
-      ? fromIni({ profile: process.env.AWS_PROFILE })
-      : {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          sessionToken: process.env.AWS_SESSION_TOKEN as string,
-        };
-  
-    if (!process.env.AWS_SESSION_TOKEN) {
-      delete (credentials as any).sessionToken;
-    }
-  
+    ? fromIni({ profile: process.env.AWS_PROFILE })
+    : {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        ...(process.env.AWS_SESSION_TOKEN && { sessionToken: process.env.AWS_SESSION_TOKEN }),
+      };
+
     this.client = new SSMClient({ region, credentials });
 
     this.maxTries = maxTries;
